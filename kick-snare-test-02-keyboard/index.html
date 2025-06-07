@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Keyboard Kick & Snare</title>
+</head>
+
+<body>
+  <h2>Press "F" for Kick, "J" for Snare</h2>
+
+  <script>
+    let audioCtx;
+    const buffers = {};
+
+    async function loadSound(name, url) {
+      const response = await fetch(url);
+      const arrayBuffer = await response.arrayBuffer();
+      const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+      buffers[name] = audioBuffer;
+    }
+
+    async function init() {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      await Promise.all([
+        loadSound('kick', 'kick.wav'),
+        loadSound('snare', 'snare.wav'),
+      ]);
+
+      console.log('Sounds loaded and ready.');
+    }
+
+    function playSound(name) {
+      if (!buffers[name]) return;
+
+      const source = audioCtx.createBufferSource();
+      source.buffer = buffers[name];
+      source.connect(audioCtx.destination);
+      source.start(0);
+    }
+
+    // 초기화 후 키 이벤트 등록
+    window.addEventListener('keydown', async (e) => {
+      if (!audioCtx) {
+        await init();
+      }
+
+      if (e.repeat) return; // 키 누르고 있을 때 중복 재생 방지
+
+      if (e.key === 'f' || e.key === 'F') {
+        playSound('kick');
+      } else if (e.key === 'j' || e.key === 'J') {
+        playSound('snare');
+      }
+    });
+  </script>
+</body>
+
+</html>
