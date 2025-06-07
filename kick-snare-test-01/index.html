@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Kick and Snare</title>
+</head>
+<body>
+  <button id="kickBtn">Kick</button>
+  <button id="snareBtn">Snare</button>
+
+  <script>
+    let audioCtx;
+    const buffers = {}; // kick, snare 버퍼 저장
+
+    async function loadSound(name, url) {
+      const response = await fetch(url);
+      const arrayBuffer = await response.arrayBuffer();
+      const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+      buffers[name] = audioBuffer;
+    }
+
+    async function init() {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      await Promise.all([
+        loadSound('kick', 'kick.wav'),
+        loadSound('snare', 'snare.wav')
+      ]);
+
+      console.log("All sounds loaded!");
+    }
+
+    function playSound(name) {
+      const source = audioCtx.createBufferSource();
+      source.buffer = buffers[name];
+      source.connect(audioCtx.destination);
+      source.start(0); // 딜레이 없이 재생
+    }
+
+    document.getElementById('kickBtn').addEventListener('click', () => {
+      if (!audioCtx) {
+        init().then(() => playSound('kick'));
+      } else {
+        playSound('kick');
+      }
+    });
+
+    document.getElementById('snareBtn').addEventListener('click', () => {
+      if (!audioCtx) {
+        init().then(() => playSound('snare'));
+      } else {
+        playSound('snare');
+      }
+    });
+  </script>
+</body>
+</html>

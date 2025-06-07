@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Low Latency Audio Example</title>
+</head>
+
+<body>
+    <button id="playBtn">Play Sound</button>
+
+    <script>
+        let audioCtx;
+        let buffer;
+
+        // 오디오 로드
+        async function loadAudio() {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const response = await fetch('kick.wav'); // 미리 준비한 짧은 오디오 파일
+            const arrayBuffer = await response.arrayBuffer();
+            buffer = await audioCtx.decodeAudioData(arrayBuffer);
+        }
+
+        // 오디오 재생
+        function playSound() {
+            const source = audioCtx.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioCtx.destination);
+            source.start(0); // 지연 없이 즉시 재생
+        }
+
+        document.getElementById('playBtn').addEventListener('click', () => {
+            if (!buffer) {
+                loadAudio().then(() => {
+                    playSound();
+                });
+            } else {
+                playSound();
+            }
+        });
+    </script>
+</body>
+
+</html>
